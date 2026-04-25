@@ -1,0 +1,322 @@
+/* ==========================================
+   1. VARIABLES Y CONFIGURACIÓN BASE
+   ========================================== */
+:root {
+    --bg-fondo: #0f172a;        /* Azul muy oscuro */
+    --bg-tarjeta: #1e293b;      /* Azul oscuro */
+    --bg-input: #334155;        /* Azul grisáceo */
+    --color-acento: #3b82f6;    /* Azul brillante */
+    --color-hover: #2563eb;
+    --texto-principal: #f8fafc;
+    --texto-secundario: #94a3b8;
+    --rojo-alerta: #ef4444;
+    --amarillo-editar: #eab308;
+    --verde-exito: #22c55e;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+body {
+    background-color: var(--bg-fondo);
+    color: var(--texto-principal);
+}
+
+/* ==========================================
+   2. BARRA DE NAVEGACIÓN Y HEADER
+   ========================================== */
+.navbar {
+    background-color: var(--bg-tarjeta);
+    padding: 15px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.logo {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: var(--color-acento);
+}
+
+.nav-links {
+    list-style: none;
+    display: flex;
+    gap: 20px;
+}
+
+.nav-links a {
+    color: var(--texto-principal);
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.nav-links a:hover {
+    color: var(--color-acento);
+}
+
+/* Botones de la barra de navegación */
+.btn-carrito, .btn-admin-control {
+    background-color: var(--bg-input);
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 20px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: transform 0.2s, background 0.2s;
+}
+
+.btn-carrito:hover { transform: scale(1.05); }
+.btn-admin-control:hover { background-color: #475569; }
+
+.hero {
+    background: linear-gradient(rgba(15, 23, 42, 0.7), rgba(15, 23, 42, 0.9)), url('https://images.unsplash.com/photo-1593640408182-31c70c8268f5?q=80&w=2000') center/cover;
+    height: 300px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    border-bottom: 2px solid var(--color-acento);
+}
+
+.hero h1 { font-size: 2.5rem; margin-bottom: 10px; }
+.hero p { font-size: 1.2rem; color: var(--texto-secundario); }
+
+/* ==========================================
+   3. CATÁLOGO DE PRODUCTOS (GRID)
+   ========================================== */
+.contenedor-principal {
+    max-width: 1200px;
+    margin: 40px auto;
+    padding: 0 20px;
+}
+
+.grid-productos {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 25px;
+    margin-top: 20px;
+}
+
+.tarjeta-producto {
+    background-color: var(--bg-tarjeta);
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+    transition: transform 0.3s;
+    border: 1px solid var(--bg-input);
+    position: relative; /* Importante para los botones de admin */
+}
+
+.tarjeta-producto:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
+    border-color: var(--color-acento);
+}
+
+.imagen-producto { font-size: 4rem; margin-bottom: 15px; }
+.img-real { width: 100%; height: 180px; object-fit: contain; margin-bottom: 15px; border-radius: 8px; }
+
+.marca-categoria { font-size: 0.85rem; color: var(--texto-secundario); text-transform: uppercase; letter-spacing: 1px; }
+.nombre-producto { font-size: 1.2rem; margin: 10px 0; }
+.precio { font-size: 1.5rem; font-weight: bold; color: var(--color-acento); margin-bottom: 15px; }
+
+.btn-comprar {
+    width: 100%;
+    background-color: var(--color-acento);
+    color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.btn-comprar:hover { background-color: var(--color-hover); }
+
+/* ==========================================
+   4. BOTONES DE ADMINISTRACIÓN (CRUD)
+   ========================================== */
+.btn-del {
+    background: var(--rojo-alerta); color: white; border: none; padding: 6px 10px;
+    border-radius: 4px; position: absolute; top: 10px; right: 10px; 
+    cursor: pointer; z-index: 10; font-size: 0.9rem;
+}
+.btn-edit {
+    background: var(--amarillo-editar); color: white; border: none; padding: 6px 10px;
+    border-radius: 4px; position: absolute; top: 10px; right: 50px; 
+    cursor: pointer; z-index: 10; font-size: 0.9rem;
+}
+.btn-del:hover { background: #dc2626; }
+.btn-edit:hover { background: #ca8a04; }
+
+/* ==========================================
+   5. VENTANAS MODALES (Formulario y Detalles)
+   ========================================== */
+.modal {
+    display: none; position: fixed; z-index: 1001;
+    left: 0; top: 0; width: 100%; height: 100%;
+    background-color: rgba(0,0,0,0.8);
+    align-items: center; justify-content: center;
+}
+
+.modal-content {
+    background-color: var(--bg-tarjeta);
+    padding: 30px; border-radius: 12px; width: 90%; max-width: 600px;
+    position: relative; border: 1px solid var(--color-acento);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.7);
+    max-height: 90vh; overflow-y: auto;
+}
+
+.btn-cerrar-modal {
+    position: absolute; top: 15px; right: 20px;
+    color: var(--texto-secundario); font-size: 24px; font-weight: bold; cursor: pointer;
+}
+.btn-cerrar-modal:hover { color: white; }
+
+.modal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: center; }
+.modal-grid ul { list-style: none; color: var(--texto-secundario); line-height: 1.8; margin-top: 10px; }
+
+/* Formularios */
+input, select {
+    outline: none;
+}
+input:focus, select:focus {
+    border: 1px solid var(--color-acento) !important;
+}
+
+/* ==========================================
+   6. PANEL LATERAL DEL CARRITO
+   ========================================== */
+.overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.7); z-index: 999;
+    opacity: 0; visibility: hidden; transition: 0.3s;
+}
+.overlay.activo { opacity: 1; visibility: visible; }
+
+.sidebar {
+    position: fixed; top: 0; right: -400px; width: 350px; height: 100vh;
+    background: var(--bg-tarjeta); z-index: 1000;
+    box-shadow: -5px 0 15px rgba(0,0,0,0.5);
+    transition: right 0.3s ease-in-out;
+    display: flex; flex-direction: column;
+}
+.sidebar.activo { right: 0; }
+
+.sidebar-header, .sidebar-footer { padding: 20px; background: var(--bg-fondo); }
+.sidebar-header { display: flex; justify-content: space-between; align-items: center; }
+.btn-cerrar { background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer; }
+
+.lista-carrito { flex-grow: 1; padding: 20px; overflow-y: auto; }
+.item-carrito {
+    display: flex; justify-content: space-between; align-items: center;
+    background: var(--bg-fondo); padding: 10px; border-radius: 8px; margin-bottom: 10px;
+    border: 1px solid var(--bg-input);
+}
+.btn-eliminar { background: var(--rojo-alerta); color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; }
+.btn-eliminar:hover { background: #dc2626; }
+
+/* ==========================================
+   7. ASESOR INTELIGENTE (CHATBOT RAG)
+   ========================================== */
+#btn-abrir-chat {
+    position: fixed; bottom: 30px; right: 30px;
+    background: var(--color-acento); color: white; padding: 15px 25px;
+    border-radius: 30px; font-weight: bold; cursor: pointer;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.5); z-index: 1000;
+    transition: transform 0.2s, background 0.2s;
+}
+#btn-abrir-chat:hover { transform: scale(1.05); background: var(--color-hover); }
+
+#ventana-chat {
+    position: fixed; bottom: 90px; right: 30px;
+    width: 350px; height: 500px; background: var(--bg-tarjeta);
+    border-radius: 12px; display: none; flex-direction: column;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.8); z-index: 1001;
+    overflow: hidden; border: 1px solid var(--color-acento);
+}
+#ventana-chat.abierto { display: flex; }
+
+#chat-header {
+    background: var(--color-acento); color: white; padding: 15px;
+    display: flex; justify-content: space-between; font-weight: bold;
+}
+
+#chat-mensajes {
+    flex-grow: 1; padding: 15px; overflow-y: auto;
+    display: flex; flex-direction: column; gap: 12px;
+}
+
+/* Burbujas del Chat */
+.msg-bot {
+    background: var(--bg-input); color: white; padding: 10px 15px;
+    border-radius: 0 15px 15px 15px; align-self: flex-start;
+    max-width: 85%; font-size: 0.95rem; line-height: 1.4;
+}
+.msg-user {
+    background: var(--color-acento); color: white; padding: 10px 15px;
+    border-radius: 15px 0 15px 15px; align-self: flex-end;
+    max-width: 85%; font-size: 0.95rem; line-height: 1.4;
+}
+.msg-pensando {
+    background: transparent; color: var(--texto-secundario);
+    font-style: italic; font-size: 0.85rem; padding: 0 10px;
+}
+
+#chat-input-area {
+    display: flex; padding: 15px; background: var(--bg-fondo); gap: 10px;
+}
+#chat-input-area input {
+    flex-grow: 1; background: var(--bg-input); border: none; color: white;
+    padding: 10px; border-radius: 8px; outline: none;
+}
+#chat-input-area button {
+    background: var(--color-acento); color: white; border: none; padding: 0 15px;
+    border-radius: 8px; cursor: pointer; font-weight: bold;
+}
+#chat-input-area button:hover { background: var(--color-hover); }
+
+/* Scrollbar personalizado para el chat y carrito */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: var(--bg-fondo); }
+::-webkit-scrollbar-thumb { background: var(--bg-input); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--texto-secundario); }
+
+/* Estilo para productos borrados lógicamente (solo visibles para admin) */
+.producto-inactivo {
+    filter: grayscale(0.8); /* Lo hace ver más "apagado" */
+    opacity: 0.7;
+    border: 1px dashed var(--texto-secundario) !important;
+    background: linear-gradient(135deg, var(--bg-tarjeta) 0%, #0f172a 100%) !important;
+    cursor: not-allowed;
+}
+
+.producto-inactivo::before {
+    content: "INACTIVO";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(-15deg);
+    font-size: 2rem;
+    font-weight: bold;
+    color: rgba(239, 68, 68, 0.2); /* Rojo muy suave de fondo */
+    pointer-events: none;
+    z-index: 5;
+}
+
+/* Desactivar el botón de compra en inactivos */
+.producto-inactivo .btn-comprar {
+    background-color: #475569 !important;
+    cursor: not-allowed;
+}
