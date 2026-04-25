@@ -3,34 +3,106 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TechStore | Tu Tienda Pro</title>
+    <title>TechStore v2.0 | AI & PC Builder</title>
     <link rel="stylesheet" href="styles.css"> 
 </head>
 <body>
     <nav class="navbar">
         <div class="logo">⚡ TechStore</div>
         <ul class="nav-links">
-            <li><a href="#" onclick="cargarProductos()">Catálogo</a></li>
+            <li><a href="#" onclick="cambiarPestana('catalogo')" id="tab-catalogo" class="activo">Catálogo</a></li>
+            <li><a href="#" onclick="cambiarPestana('builder')" id="tab-builder">Arma tu PC</a></li>
         </ul>
         <div style="display: flex; gap: 10px; align-items: center;">
-            <button id="btn-login" class="btn-admin-control" onclick="pedirPassword()">Admin Login</button>
+            <button id="btn-login" class="btn-admin-control" onclick="pedirPassword()">Admin</button>
             <button id="btn-nuevo-producto" class="btn-carrito" style="display: none; background: #3b82f6;" onclick="abrirModalCrear()">➕ Nuevo</button>
             <button id="btn-logout" class="btn-admin-control" style="display: none; background: #ef4444;" onclick="logoutAdmin()">Salir</button>
-            
             <button class="btn-carrito" onclick="toggleCarrito()">🛒 <span id="contador-carrito">0</span></button>
         </div>
     </nav>
 
-    <header class="hero">
-        <div class="hero-content">
-            <h1>Hardware de Alto Rendimiento</h1>
-            <p>Potenciado por Astra DB & IA</p>
-        </div>
-    </header>
-
     <main class="contenedor-principal">
-        <div id="contenedor-productos" class="grid-productos"></div>
+        
+        <div id="vista-catalogo">
+            <div class="barra-filtros">
+                <input type="text" id="filtro-texto" placeholder="Buscar por marca o modelo..." onkeyup="aplicarFiltros()">
+                <select id="filtro-categoria" onchange="aplicarFiltros()">
+                    <option value="todas">Todas las categorías</option>
+                    <option value="Portátiles">Portátiles</option>
+                    <option value="Mouses">Mouses</option>
+                    <option value="Teclados">Teclados</option>
+                    <option value="Monitores">Monitores</option>
+                    <option value="Procesadores">Procesadores</option>
+                    <option value="Motherboards">Motherboards</option>
+                    <option value="Tarjetas Gráficas">Tarjetas Gráficas</option>
+                    <option value="Memorias RAM">Memorias RAM</option>
+                    <option value="Almacenamiento">Almacenamiento</option>
+                    <option value="Fuentes de Poder">Fuentes de Poder</option>
+                    <option value="Gabinetes">Gabinetes</option>
+                </select>
+                <input type="number" id="filtro-min" placeholder="Min $" onkeyup="aplicarFiltros()">
+                <input type="number" id="filtro-max" placeholder="Max $" onkeyup="aplicarFiltros()">
+                <button onclick="limpiarFiltros()" class="btn-admin-control">Limpiar</button>
+            </div>
+            
+            <div id="contenedor-productos" class="grid-productos"></div>
+        </div>
+
+        <div id="vista-builder" style="display: none;">
+            <div class="builder-header">
+                <h2>Construye tu Workstation Perfecta</h2>
+                <p>Selecciona los componentes para armar tu equipo a medida.</p>
+                <div class="builder-total">Total: $<span id="total-pc">0</span></div>
+                <button class="btn-comprar" onclick="agregarPcAlCarrito()" style="margin-top: 10px;">Agregar PC Completa al Carrito</button>
+            </div>
+            <div id="builder-slots" class="builder-grid">
+                </div>
+        </div>
+
     </main>
+
+    <div id="modal-picker" class="modal">
+        <div class="modal-content" style="max-width: 800px;">
+            <span class="btn-cerrar-modal" onclick="cerrarModalPicker()">✖</span>
+            <h2 id="titulo-picker">Seleccionar Componente</h2>
+            <div id="grid-picker" class="grid-productos" style="margin-top: 20px;"></div>
+        </div>
+    </div>
+
+    <div id="modal-crear" class="modal">
+        <div class="modal-content" style="max-width: 450px;">
+            <span class="btn-cerrar-modal" onclick="cerrarModalCrear()">✖</span>
+            <h2 id="titulo-modal-form">Nuevo Producto</h2>
+            <form id="form-nuevo-producto" onsubmit="enviarProducto(event)">
+                <input type="text" id="input-marca" placeholder="Marca" required class="input-form">
+                <input type="text" id="input-modelo" placeholder="Modelo" required class="input-form">
+                
+                <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                    <select id="input-categoria" onchange="cambiarCampos()" class="input-form" style="margin-bottom: 0;">
+                        <option value="Portátiles">Portátiles</option>
+                        <option value="Mouses">Mouses</option>
+                        <option value="Teclados">Teclados</option>
+                        <option value="Monitores">Monitores</option>
+                        <option value="Procesadores">Procesadores</option>
+                        <option value="Motherboards">Motherboards</option>
+                        <option value="Tarjetas Gráficas">Tarjetas Gráficas</option>
+                        <option value="Memorias RAM">Memorias RAM</option>
+                        <option value="Almacenamiento">Almacenamiento</option>
+                        <option value="Fuentes de Poder">Fuentes de Poder</option>
+                        <option value="Gabinetes">Gabinetes</option>
+                    </select>
+                    <input type="number" id="input-precio" placeholder="Precio ($)" step="0.01" required class="input-form" style="margin-bottom: 0;">
+                </div>
+
+                <input type="text" id="input-imagen" placeholder="URL de Imagen" class="input-form">
+
+                <h4 style="margin: 15px 0 10px 0; color: #3b82f6;">Especificaciones:</h4>
+                <div id="specs-dinamicas" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px;"></div>
+
+                <button type="submit" class="btn-comprar" style="width: 100%;">Guardar en Astra DB</button>
+            </form>
+        </div>
+    </div>
 
     <div id="overlay-carrito" class="overlay" onclick="toggleCarrito()"></div>
     <aside id="sidebar-carrito" class="sidebar">
@@ -40,49 +112,14 @@
     </aside>
 
     <div id="modal-producto" class="modal">
-        <div class="modal-content">
-            <span class="btn-cerrar-modal" onclick="cerrarModal()">✖</span>
-            <div id="contenido-modal"></div>
-        </div>
-    </div>
-
-    <div id="modal-crear" class="modal">
-        <div class="modal-content" style="max-width: 450px;">
-            <span class="btn-cerrar-modal" onclick="cerrarModalCrear()">✖</span>
-            <h2 id="titulo-modal-form">Nuevo Producto</h2>
-            <form id="form-nuevo-producto" onsubmit="enviarProducto(event)">
-                <input type="text" id="input-marca" placeholder="Marca" required style="width: 100%; margin-bottom: 10px; padding: 8px; border-radius: 5px; border: none; background: #334155; color: white;">
-                <input type="text" id="input-modelo" placeholder="Modelo" required style="width: 100%; margin-bottom: 10px; padding: 8px; border-radius: 5px; border: none; background: #334155; color: white;">
-                
-                <div style="display: flex; gap: 10px; margin-bottom: 10px;">
-                    <select id="input-categoria" onchange="cambiarCampos()" style="flex: 1; padding: 8px; border-radius: 5px; border: none; background: #334155; color: white;">
-                        <option value="Portátiles">Portátiles</option>
-                        <option value="Mouses">Mouses</option>
-                        <option value="Teclados">Teclados</option>
-                        <option value="Monitores">Monitores</option>
-                    </select>
-                    <input type="number" id="input-precio" placeholder="Precio ($)" step="0.01" required style="flex: 1; padding: 8px; border-radius: 5px; border: none; background: #334155; color: white;">
-                </div>
-
-                <input type="text" id="input-imagen" placeholder="URL de Imagen (Opcional)" style="width: 100%; margin-bottom: 10px; padding: 8px; border-radius: 5px; border: none; background: #334155; color: white;">
-
-                <h4 style="margin: 15px 0 10px 0; color: #3b82f6;">Especificaciones Técnicas:</h4>
-                <div id="specs-dinamicas" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px;">
-                    </div>
-
-                <button type="submit" class="btn-comprar" style="width: 100%;">Guardar Producto</button>
-            </form>
-        </div>
+        <div class="modal-content"><span class="btn-cerrar-modal" onclick="cerrarModal()">✖</span><div id="contenido-modal"></div></div>
     </div>
 
     <div id="btn-abrir-chat" onclick="toggleChat()">💬 Asesor IA</div>
     <div id="ventana-chat">
         <div id="chat-header"><span>🤖 TechGuide</span><button onclick="toggleChat()" style="background:none; border:none; color:white; cursor:pointer;">✖</button></div>
         <div id="chat-mensajes"><div class="msg-bot">¡Hola! Soy TechGuide. ¿En qué te puedo asesorar hoy?</div></div>
-        <div id="chat-input-area">
-            <input type="text" id="chat-input" placeholder="Escribe tu mensaje..." onkeypress="if(event.key === 'Enter') enviarChat()">
-            <button onclick="enviarChat()">Enviar</button>
-        </div>
+        <div id="chat-input-area"><input type="text" id="chat-input" placeholder="Escribe tu mensaje..." onkeypress="if(event.key === 'Enter') enviarChat()"><button onclick="enviarChat()">Enviar</button></div>
     </div>
 
     <script src="app.js"></script> 

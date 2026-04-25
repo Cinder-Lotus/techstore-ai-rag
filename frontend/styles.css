@@ -339,3 +339,83 @@ input:focus, select:focus {
     background: #059669;
     transform: scale(1.1);
 }
+
+/* ==========================================
+   ACTUALIZACIÓN V2.0: Pestañas, Filtros y Builder
+   ========================================== */
+
+/* Pestañas de Navegación */
+.nav-links a.activo {
+    color: var(--color-acento);
+    border-bottom: 2px solid var(--color-acento);
+    padding-bottom: 5px;
+}
+
+/* Barra de Filtros */
+.barra-filtros {
+    display: flex;
+    gap: 15px;
+    background: var(--bg-tarjeta);
+    padding: 20px;
+    border-radius: 12px;
+    margin-bottom: 30px;
+    border: 1px solid var(--bg-input);
+    flex-wrap: wrap;
+}
+
+.barra-filtros input, .barra-filtros select {
+    background: var(--bg-fondo);
+    border: 1px solid var(--bg-input);
+    color: white;
+    padding: 10px 15px;
+    border-radius: 8px;
+    flex: 1;
+    min-width: 150px;
+}
+
+/* Inputs generales de formularios */
+.input-form {
+    width: 100%;
+    margin-bottom: 10px;
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid var(--bg-input);
+    background: var(--bg-fondo);
+    color: white;
+}
+
+/* Interfaz del PC Builder */
+.builder-header {
+    background: linear-gradient(135deg, var(--bg-tarjeta), var(--bg-fondo));
+    padding: 30px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    border-left: 4px solid var(--color-acento);
+}
+
+.builder-total {
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: var(--color-acento);
+    margin: 15px 0;
+}
+
+.builder-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.builder-slot {
+    display: flex;
+    align-items: center;
+    background: var(--bg-tarjeta);
+    padding: 20px;
+    border-radius: 8px;
+    border: 1px solid var(--bg-input);
+    transition: border 0.3s;
+}
+
+.builder-slot:hover {
+    border-color: var(--color-acento);
+}
