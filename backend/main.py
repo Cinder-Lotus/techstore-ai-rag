@@ -67,6 +67,18 @@ async def eliminar_producto(id: str):
     except Exception as e:
         return {"error": str(e)}
 
+# NUEVA RUTA: Restaurar un producto inactivo
+@app.patch("/api/productos/{id}/restaurar")
+async def restaurar_producto(id: str):
+    try:
+        coleccion.update_one(
+            {"_id": id}, 
+            {"$set": {"estado": "activo"}}
+        )
+        return {"status": "producto restaurado"}
+    except Exception as e:
+        return {"error": str(e)}
+
 # ==========================================
 # RUTA DEL ASESOR INTELIGENTE (IA)
 # ==========================================

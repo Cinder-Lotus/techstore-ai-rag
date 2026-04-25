@@ -10,8 +10,6 @@ let memoriaConversacion = []; // Memoria de la IA
 // ==========================================
 // 1. CARGAR INVENTARIO Y DIBUJAR TARJETAS
 // ==========================================
-// ... (dentro de cargarProductos)
-
 async function cargarProductos() {
     const contenedor = document.getElementById('contenedor-productos');
     try {
@@ -20,21 +18,27 @@ async function cargarProductos() {
         contenedor.innerHTML = ''; 
 
         inventario.forEach((p, index) => {
-            // REGLA DE VISIBILIDAD:
-            // Si el producto está inactivo y NO eres admin, no se dibuja.
+            // REGLA DE VISIBILIDAD: Si el producto está inactivo y NO eres admin, no se dibuja.
             if (p.estado === 'inactivo' && !esAdmin) return;
 
             const tarjeta = document.createElement('div');
+            const estaInactivo = p.estado === 'inactivo';
             
-            // ASIGNACIÓN DE CLASES:
-            // Si el producto está inactivo, le ponemos una clase CSS especial
-            const claseInactivo = p.estado === 'inactivo' ? 'producto-inactivo' : '';
-            tarjeta.className = `tarjeta-producto ${claseInactivo}`;
+            // ASIGNACIÓN DE CLASES
+            tarjeta.className = `tarjeta-producto ${estaInactivo ? 'producto-inactivo' : ''}`;
             
-            const botonesAdmin = esAdmin ? `
-                <button class="btn-del" onclick="borrarProducto('${p._id}')" title="Desactivar">🚫</button>
-                <button class="btn-edit" onclick="abrirModalEditar(${index})">✏️</button>
-            ` : '';
+            // BOTONES ADMIN: Inteligencia para mostrar Borrar o Restaurar
+            let botonesAdmin = '';
+            if (esAdmin) {
+                const btnAccion = estaInactivo 
+                    ? `<button class="btn-restore" onclick="restaurarProducto('${p._id}')" title="Restaurar">🔄</button>`
+                    : `<button class="btn-del" onclick="borrarProducto('${p._id}')" title="Desactivar">🚫</button>`;
+                
+                botonesAdmin = `
+                    ${btnAccion}
+                    <button class="btn-edit" onclick="abrirModalEditar(${index})">✏️</button>
+                `;
+            }
 
             let visual = p.imagen_url ? `<img src="${p.imagen_url}" class="img-real">` : `<div class="imagen-producto">✨</div>`;
 
@@ -42,12 +46,12 @@ async function cargarProductos() {
                 ${botonesAdmin}
                 <div style="cursor:pointer;" onclick="abrirModalDetalles(${index})">
                     ${visual}
-                    <div class="marca-categoria">${p.marca} • ${p.categoria} ${p.estado === 'inactivo' ? '(INACTIVO)' : ''}</div>
+                    <div class="marca-categoria">${p.marca} • ${p.categoria} ${estaInactivo ? '(INACTIVO)' : ''}</div>
                     <h3 class="nombre-producto">${p.modelo}</h3>
                     <div class="precio">$${p.precio.toLocaleString()}</div>
                 </div>
-                <button class="btn-comprar" onclick="agregarAlCarrito(${index})" ${p.estado === 'inactivo' ? 'disabled' : ''}>
-                    ${p.estado === 'inactivo' ? 'No disponible' : 'Agregar al Carrito'}
+                <button class="btn-comprar" onclick="agregarAlCarrito(${index})" ${estaInactivo ? 'disabled' : ''}>
+                    ${estaInactivo ? 'No disponible' : 'Agregar al Carrito'}
                 </button>
             `;
             contenedor.appendChild(tarjeta);
@@ -71,9 +75,19 @@ function pedirPassword() {
 function logoutAdmin() { location.reload(); }
 
 async function borrarProducto(id) {
-    if (!confirm("¿Eliminar permanentemente este producto?")) return;
+    if (!confirm("¿Desactivar este producto del catálogo?")) return;
     await fetch(`${API_URL}/productos/${id}`, { method: 'DELETE' });
     cargarProductos();
+}
+
+async function restaurarProducto(id) {
+    if (!confirm("¿Deseas activar este producto nuevamente?")) return;
+    try {
+        await fetch(`${API_URL}/productos/${id}/restaurar`, { method: 'PATCH' });
+        cargarProductos();
+    } catch (e) {
+        alert("Error al restaurar el producto");
+    }
 }
 
 function abrirModalCrear() {
@@ -88,17 +102,30 @@ function abrirModalEditar(index) {
     const p = inventario[index];
     idEditando = p._id;
     document.getElementById('titulo-modal-form').innerText = "Editar Producto";
+    
     document.getElementById('input-marca').value = p.marca;
     document.getElementById('input-modelo').value = p.modelo;
-    document.getElementById('input-categoria').value = p.categoria;
     document.getElementById('input-precio').value = p.precio;
     document.getElementById('input-imagen').value = p.imagen_url || "";
     
+    // MAPEO INTELIGENTE DE CATEGORÍA (Soluciona el error del teclado Razer)
+    const selector = document.getElementById('input-categoria');
+    const catNormalizada = p.categoria ? p.categoria.trim().toLowerCase() : "";
+    
+    let coincidencia = Array.from(selector.options).find(opt => 
+        opt.value.toLowerCase().includes(catNormalizada.substring(0, 4))
+    );
+    selector.value = coincidencia ? coincidencia.value : "Teclados";
+    
     cambiarCampos();
     
-    for (const [clave, valor] of Object.entries(p.especificaciones || {})) {
-        const input = document.getElementById(`spec-${clave}`);
-        if (input) input.value = valor;
+    // MAPEO INTELIGENTE DE ESPECIFICACIONES
+    if (p.especificaciones) {
+        for (const [clave, valor] of Object.entries(p.especificaciones)) {
+            const input = document.getElementById(`spec-${clave}`) || 
+                          document.querySelector(`[id^="spec-"][id*="${clave.substring(0,3)}"]`);
+            if (input) input.value = valor;
+        }
     }
     document.getElementById('modal-crear').style.display = 'flex';
 }
