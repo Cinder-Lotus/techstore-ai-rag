@@ -1,5 +1,6 @@
 const API_URL = "http://127.0.0.1:8000/api";
 
+// Estados Globales
 let inventario = []; 
 let carrito = []; 
 let esAdmin = false; 
@@ -13,7 +14,7 @@ async function cargarProductos() {
     try {
         const respuesta = await fetch(`${API_URL}/productos`);
         inventario = await respuesta.json(); 
-        aplicarFiltros(); // En lugar de renderizar directo, pasamos por los filtros
+        aplicarFiltros();
     } catch (e) { console.error("Error cargando inventario:", e); }
 }
 
@@ -24,13 +25,10 @@ function aplicarFiltros() {
     const max = parseFloat(document.getElementById('filtro-max').value) || Infinity;
 
     const filtrados = inventario.filter(p => {
-        // Regla admin: ocultar inactivos a usuarios normales
         if (p.estado === 'inactivo' && !esAdmin) return false;
-        
         const coincideTexto = p.marca.toLowerCase().includes(texto) || p.modelo.toLowerCase().includes(texto);
         const coincideCat = cat === 'todas' || p.categoria === cat;
         const coincidePrecio = p.precio >= min && p.precio <= max;
-        
         return coincideTexto && coincideCat && coincidePrecio;
     });
 
@@ -66,7 +64,6 @@ function renderizarTarjetas(listaProductos, contenedorId, modoPicker = false) {
 
         let visual = p.imagen_url ? `<img src="${p.imagen_url}" class="img-real">` : `<div class="imagen-producto">✨</div>`;
 
-        // Si estamos en modo "Picker" (Armar PC), el botón hace algo distinto
         let botonAccion = modoPicker 
             ? `<button class="btn-comprar" onclick="seleccionarParaPC(${indexOriginal})">Seleccionar</button>`
             : `<button class="btn-comprar" onclick="agregarAlCarrito(${indexOriginal})" ${estaInactivo ? 'disabled' : ''}>
@@ -91,13 +88,8 @@ function renderizarTarjetas(listaProductos, contenedorId, modoPicker = false) {
 // 2. SISTEMA DE "ARMA TU PC" (PC BUILDER)
 // ==========================================
 let pcBuild = {
-    'Procesadores': null,
-    'Motherboards': null,
-    'Tarjetas Gráficas': null,
-    'Memorias RAM': null,
-    'Almacenamiento': null,
-    'Fuentes de Poder': null,
-    'Gabinetes': null
+    'Procesadores': null, 'Motherboards': null, 'Tarjetas Gráficas': null,
+    'Memorias RAM': null, 'Almacenamiento': null, 'Fuentes de Poder': null, 'Gabinetes': null
 };
 
 let categoriaSeleccionando = null;
@@ -105,10 +97,8 @@ let categoriaSeleccionando = null;
 function cambiarPestana(pestaña) {
     document.getElementById('vista-catalogo').style.display = pestaña === 'catalogo' ? 'block' : 'none';
     document.getElementById('vista-builder').style.display = pestaña === 'builder' ? 'block' : 'none';
-    
     document.getElementById('tab-catalogo').className = pestaña === 'catalogo' ? 'activo' : '';
     document.getElementById('tab-builder').className = pestaña === 'builder' ? 'activo' : '';
-    
     if (pestaña === 'builder') renderizarPCBuilder();
 }
 
@@ -140,47 +130,24 @@ function renderizarPCBuilder() {
         }
         contenedor.appendChild(slot);
     });
-
     document.getElementById('total-pc').innerText = total.toLocaleString();
 }
 
 function abrirPicker(categoria) {
     categoriaSeleccionando = categoria;
     document.getElementById('titulo-picker').innerText = `Eligiendo: ${categoria}`;
-    
     const opciones = inventario.filter(p => p.categoria === categoria && p.estado !== 'inactivo');
     renderizarTarjetas(opciones, 'grid-picker', true);
-    
     document.getElementById('modal-picker').style.display = 'flex';
 }
 
 function cerrarModalPicker() { document.getElementById('modal-picker').style.display = 'none'; }
-
-function seleccionarParaPC(indexOriginal) {
-    pcBuild[categoriaSeleccionando] = inventario[indexOriginal];
-    cerrarModalPicker();
-    renderizarPCBuilder();
-}
-
-function quitarDePC(categoria) {
-    pcBuild[categoria] = null;
-    renderizarPCBuilder();
-}
-
+function seleccionarParaPC(indexOriginal) { pcBuild[categoriaSeleccionando] = inventario[indexOriginal]; cerrarModalPicker(); renderizarPCBuilder(); }
+function quitarDePC(categoria) { pcBuild[categoria] = null; renderizarPCBuilder(); }
 function agregarPcAlCarrito() {
     let agregados = 0;
-    Object.values(pcBuild).forEach(item => {
-        if (item) { carrito.push(item); agregados++; }
-    });
-    
-    if (agregados > 0) {
-        actualizarCarrito();
-        toggleCarrito();
-        // Opcional: limpiar la build después de agregar
-        // Object.keys(pcBuild).forEach(k => pcBuild[k] = null); renderizarPCBuilder();
-    } else {
-        alert("Selecciona al menos un componente para tu PC.");
-    }
+    Object.values(pcBuild).forEach(item => { if (item) { carrito.push(item); agregados++; } });
+    if (agregados > 0) { actualizarCarrito(); toggleCarrito(); } else { alert("Selecciona al menos un componente."); }
 }
 
 // ==========================================
@@ -190,8 +157,6 @@ function cambiarCampos() {
     const cat = document.getElementById('input-categoria').value;
     const div = document.getElementById('specs-dinamicas');
     div.innerHTML = '';
-    
-    // Esquemas expandidos para soportar hardware de PC
     const esquemas = {
         'Portátiles': ['procesador', 'ram', 'almacenamiento', 'grafica', 'pantalla'],
         'Mouses': ['sensor', 'switches', 'peso'],
@@ -205,16 +170,12 @@ function cambiarCampos() {
         'Fuentes de Poder': ['potencia', 'certificacion', 'modular'],
         'Gabinetes': ['formato_soportado', 'ventiladores', 'color']
     };
-    
     if(esquemas[cat]) {
         esquemas[cat].forEach(campo => {
             div.innerHTML += `<input type="text" id="spec-${campo}" placeholder="${campo.toUpperCase()}" class="input-form" style="margin-bottom:0;">`;
         });
     }
 }
-
-// El resto de las funciones CRUD (borrarProducto, restaurarProducto, enviarProducto), Carrito e IA se mantienen igual.
-// (Asegúrate de pegar las funciones de tu archivo anterior aquí si faltan, como enviarChat, pedirPassword, etc.)
 
 function pedirPassword() {
     if (prompt("Contraseña:") === "12345") {
@@ -227,26 +188,9 @@ function pedirPassword() {
 }
 
 function logoutAdmin() { location.reload(); }
-
-async function borrarProducto(id) {
-    if (!confirm("¿Desactivar este producto del catálogo?")) return;
-    await fetch(`${API_URL}/productos/${id}`, { method: 'DELETE' });
-    cargarProductos();
-}
-
-async function restaurarProducto(id) {
-    if (!confirm("¿Deseas activar este producto nuevamente?")) return;
-    await fetch(`${API_URL}/productos/${id}/restaurar`, { method: 'PATCH' });
-    cargarProductos();
-}
-
-function abrirModalCrear() {
-    idEditando = null;
-    document.getElementById('form-nuevo-producto').reset();
-    document.getElementById('titulo-modal-form').innerText = "Nuevo Producto";
-    document.getElementById('modal-crear').style.display = 'flex';
-    cambiarCampos();
-}
+async function borrarProducto(id) { if (!confirm("¿Desactivar producto?")) return; await fetch(`${API_URL}/productos/${id}`, { method: 'DELETE' }); cargarProductos(); }
+async function restaurarProducto(id) { if (!confirm("¿Restaurar producto?")) return; await fetch(`${API_URL}/productos/${id}/restaurar`, { method: 'PATCH' }); cargarProductos(); }
+function abrirModalCrear() { idEditando = null; document.getElementById('form-nuevo-producto').reset(); document.getElementById('titulo-modal-form').innerText = "Nuevo Producto"; document.getElementById('modal-crear').style.display = 'flex'; cambiarCampos(); }
 
 function abrirModalEditar(index) {
     const p = inventario[index];
@@ -256,14 +200,11 @@ function abrirModalEditar(index) {
     document.getElementById('input-modelo').value = p.modelo;
     document.getElementById('input-precio').value = p.precio;
     document.getElementById('input-imagen').value = p.imagen_url || "";
-    
     const selector = document.getElementById('input-categoria');
     const catNormalizada = p.categoria ? p.categoria.trim().toLowerCase() : "";
     let coincidencia = Array.from(selector.options).find(opt => opt.value.toLowerCase().includes(catNormalizada.substring(0, 4)));
     selector.value = coincidencia ? coincidencia.value : "Portátiles";
-    
     cambiarCampos();
-    
     if (p.especificaciones) {
         for (const [clave, valor] of Object.entries(p.especificaciones)) {
             const input = document.getElementById(`spec-${clave}`) || document.querySelector(`[id^="spec-"][id*="${clave.substring(0,3)}"]`);
@@ -280,7 +221,6 @@ async function enviarProducto(e) {
     const nuevo = { marca: document.getElementById('input-marca').value, modelo: document.getElementById('input-modelo').value, categoria: cat, precio: parseFloat(document.getElementById('input-precio').value), imagen_url: document.getElementById('input-imagen').value, especificaciones: {} };
     const inputs = document.querySelectorAll('#specs-dinamicas input');
     inputs.forEach(inp => { if(inp.value) nuevo.especificaciones[inp.id.replace('spec-','')] = inp.value; });
-
     const configFetch = { method: idEditando ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(nuevo) };
     const url = idEditando ? `${API_URL}/productos/${idEditando}` : `${API_URL}/productos`;
     await fetch(url, configFetch);
@@ -306,22 +246,69 @@ function actualizarCarrito() {
     document.getElementById('total-carrito').innerText = suma.toLocaleString();
 }
 function toggleChat() { document.getElementById('ventana-chat').classList.toggle('abierto'); }
+
+// ==========================================
+// 4. ASESOR IA CON CONTROL DE CARRITO
+// ==========================================
 async function enviarChat() {
     const input = document.getElementById('chat-input');
     const box = document.getElementById('chat-mensajes');
     const txt = input.value.trim();
     if (!txt) return;
+
     box.innerHTML += `<div class="msg-user">${txt}</div>`;
     input.value = "";
     memoriaConversacion.push({ role: "user", parts: [txt] });
+
     const idCarga = "carga-" + Date.now();
     box.innerHTML += `<div id="${idCarga}" class="msg-bot msg-pensando">Consultando...</div>`;
     box.scrollTop = box.scrollHeight; 
+
     try {
         const respuesta = await fetch(`${API_URL}/chat`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ historial: memoriaConversacion }) });
         const datos = await respuesta.json();
         document.getElementById(idCarga).remove();
-        box.innerHTML += `<div class="msg-bot">${datos.respuesta.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')}</div>`;
+
+        let textoLimpio = datos.respuesta;
+
+        // INTERCEPTOR DE COMANDOS
+        // --- INTERCEPTOR MEJORADO ---
+        if (textoLimpio.includes('||CARRITO:')) {
+            // Esta expresión regular es más flexible con posibles espacios accidentales
+            const patron = /\|\|CARRITO:\s?(AGREGAR|ELIMINAR)\s?\|\s?MODELO:\s?(.*?)\s?\|\|/i;
+            const match = textoLimpio.match(patron);
+
+            if (match) {
+                const accion = match[1].toUpperCase();
+                const modeloNombre = match[2].trim().toLowerCase();
+                
+                console.log(`Intentando ${accion} producto: "${modeloNombre}"`); // Debug en consola
+
+                // Buscamos el producto (usando trim para evitar espacios fantasma)
+                const productoEncontrado = inventario.find(p => p.modelo.trim().toLowerCase() === modeloNombre);
+
+                if (productoEncontrado) {
+                    if (accion === 'AGREGAR') {
+                        carrito.push(productoEncontrado);
+                        console.log("✅ Producto añadido con éxito");
+                    } else if (accion === 'ELIMINAR') {
+                        const indexEnCarrito = carrito.findIndex(c => c.modelo.trim().toLowerCase() === modeloNombre);
+                        if (indexEnCarrito !== -1) {
+                            carrito.splice(indexEnCarrito, 1);
+                            console.log("✅ Producto eliminado con éxito");
+                        }
+                    }
+                    actualizarCarrito();
+                } else {
+                    console.error(`❌ No se encontró el modelo "${modeloNombre}" en el inventario local.`);
+                }
+                
+                // Limpiamos el código oculto del mensaje para el usuario
+                textoLimpio = textoLimpio.replace(match[0], '');
+            }
+        }
+
+        box.innerHTML += `<div class="msg-bot">${textoLimpio.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')}</div>`;
         box.scrollTop = box.scrollHeight;
         memoriaConversacion.push({ role: "model", parts: [datos.respuesta] });
     } catch (error) { document.getElementById(idCarga).innerHTML = "Error de conexión."; }
